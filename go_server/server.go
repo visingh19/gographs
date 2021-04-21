@@ -187,8 +187,8 @@ func emptyNeo4jDB(driver neo4j.Driver, database string) (string, error) {
 }
 
 // func to add random data into the DB - mocking 'getting aws resource'
-// adds 50 random people and 100 random relationships between them based on a set of relationship names.
-func fillNeo4jDB(driver neo4j.Driver, database string) (string, error) {
+// adds up to 50 random people and numRelations random relationships between them based on a set of relationship names.
+func fillNeo4jDB(driver neo4j.Driver, database string, numRelations int) (string, error) {
 
 	session := driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeWrite,
@@ -201,15 +201,15 @@ func fillNeo4jDB(driver neo4j.Driver, database string) (string, error) {
 	var lNames = []string{"Andrews", "Brick", "Carter", "Daves", "Erickson"} // 5 -> max unique AWS 'persons' = 50 ( 10 x 5 )
 	var relations = []string{"MANAGES", "REPORTS_TO", "PAYS", "MONITORS", "AUTHORIZES"} // 5 -> 5 random relationships ( and yes, a person can manage themselves haha. )
 
-	// Now we create 200 relationships - somewhat dense --> (person)-(relation)->(person) 200 times.
+	// Now we create numRelations relationships - somewhat dense --> (person)-(relation)->(person) 200 times.
 	// At worst ( pigeonhole principle ) each of the 50 possible nodes has 4 relations, fairly connected!
 
-	// Because there are few nodes ( 50 or less ) and many relations ( 200 ), deletion should be easy.
-	// Does send 600 lines to the transaction, so that might cause problems?
+	// Because there are few nodes ( 50 or less always ), deletion should be easy.
+	// Sends 3*numRelations lines to the transaction.
 
 	var query strings.Builder
 	rand.Seed(time.Now().Unix())
-	for i := 0; i < 200; i++ {
+	for i := 0; i < numRelations; i++ {
 		fullNameOne := fNames[rand.Intn(len(fNames))] + " " + lNames[rand.Intn(len(lNames))]
 		fullNameTwo := fNames[rand.Intn(len(fNames))] + " " + lNames[rand.Intn(len(lNames))]
 		relation := relations[rand.Intn(len(relations))]
@@ -243,7 +243,35 @@ func fillNeo4jDB(driver neo4j.Driver, database string) (string, error) {
 
 }
 
+// some helpers ripped from https://github.com/neo4j-examples/movies-golang-bolt demo code.
+func unsafeClose(closeable io.Closer) {
+	if err := closeable.Close(); err != nil {
+		log.Fatal(fmt.Errorf("could not close resource: %w", err))
+	}
+}
 
+// some helpers ripped from https://github.com/neo4j-examples/movies-golang-bolt demo code.
+func (nc *Neo4jConfiguration) newDriver() (neo4j.Driver, error) {
+	return neo4j.NewDriver(nc.Url, neo4j.BasicAuth(nc.Username, nc.Password, ""))
+}
+
+
+// some helpers ripped from https://github.com/neo4j-examples/movies-golang-bolt demo code.
+func parseLimit(req *http.Request) int {
+	limits := req.URL.Query()["limit"]
+	limit := 50
+	if len(limits) > 0 {
+		var err error
+		if limit, err = strconv.Atoi(limits[0]); err != nil {
+			limit = 50
+		}
+	}
+	return limit
+}
+
+//////////////////////////////////////////
+////// HELPFUL TEST CODE /////////////////
+//////////////////////////////////////////
 
 // func to just print every 'Person' ( to console, not an API! )
 // useful for the neo4j demo movies data set, simple test!
@@ -325,33 +353,6 @@ func helloWorld(driver neo4j.Driver, database string) (string, error) {
 	return greeting.(string), nil
 }
 
-// some helpers ripped from https://github.com/neo4j-examples/movies-golang-bolt demo code.
-func unsafeClose(closeable io.Closer) {
-	if err := closeable.Close(); err != nil {
-		log.Fatal(fmt.Errorf("could not close resource: %w", err))
-	}
-}
-
-// some helpers ripped from https://github.com/neo4j-examples/movies-golang-bolt demo code.
-func (nc *Neo4jConfiguration) newDriver() (neo4j.Driver, error) {
-	return neo4j.NewDriver(nc.Url, neo4j.BasicAuth(nc.Username, nc.Password, ""))
-}
-
-
-// some helpers ripped from https://github.com/neo4j-examples/movies-golang-bolt demo code.
-func parseLimit(req *http.Request) int {
-	limits := req.URL.Query()["limit"]
-	limit := 50
-	if len(limits) > 0 {
-		var err error
-		if limit, err = strconv.Atoi(limits[0]); err != nil {
-			limit = 50
-		}
-	}
-	return limit
-}
-
-
 ///////////////////////////////////////////////////////
 /////////// MAIN CONTROLLER ///////////////////////////
 ///////////////////////////////////////////////////////
@@ -396,6 +397,10 @@ func main() {
 	// fmt.Printf("Running 'hello world' function...")
 	// helloWorld(driver, neo4jConfig.Database)
 
+	// fills db with 50 relations
+	fillNeo4jDB(driver, neo4jConfig.Database, 100)
+
+	// empties db of all nodes & relations
 	emptyNeo4jDB(driver, neo4jConfig.Database)
 
 	// the handler below wants functions, so the handlers above should return functions ( functions that return functions! )
