@@ -155,10 +155,43 @@ func setNeo4jConfigs() *Neo4jConfiguration {
 }
 
 // func to empty out DB ( todo )
+func emptyNeo4jDB(driver neo4j.Driver, database string) (string, error) {
+
+	session := driver.NewSession(neo4j.SessionConfig{
+		AccessMode:   neo4j.AccessModeWrite,
+		DatabaseName: database,
+	})
+	defer unsafeClose(session)
+
+	var query strings.Builder
+	subQuery := "MATCH (n) DETACH DELETE n"
+	query.WriteString(subQuery)
+
+	// Query String exists.
+
+	_, err := session.WriteTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
+		_, err := transaction.Run(
+			query.String(), map[string]interface{}{})
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	}) // end write.
+
+	if err != nil { // if write had errors, return them.
+		return "", err
+	}
+
+	return "Worked", nil
+}
+
+// func to add random data into the DB - mocking 'getting aws resource'
+// adds 50 random people and 100 random relationships between them based on a set of relationship names.
 func fillNeo4jDB(driver neo4j.Driver, database string) (string, error) {
 
 	session := driver.NewSession(neo4j.SessionConfig{
-		AccessMode:   neo4j.AccessModeRead,
+		AccessMode:   neo4j.AccessModeWrite,
 		DatabaseName: database,
 	})
 	defer unsafeClose(session)
@@ -211,11 +244,9 @@ func fillNeo4jDB(driver neo4j.Driver, database string) (string, error) {
 }
 
 
-// func to add random data into the DB ( todo ) - mocking 'getting aws resource'
-// adds 50 random people and 100 random relationships between them based on a set of relationship names.
-
 
 // func to just print every 'Person' ( to console, not an API! )
+// useful for the neo4j demo movies data set, simple test!
 func actorPrinter(driver neo4j.Driver, database string) {
 
 	log.Println("Hi")
@@ -365,7 +396,7 @@ func main() {
 	// fmt.Printf("Running 'hello world' function...")
 	// helloWorld(driver, neo4jConfig.Database)
 
-	fillNeo4jDB(driver, neo4jConfig.Database)
+	emptyNeo4jDB(driver, neo4jConfig.Database)
 
 	// the handler below wants functions, so the handlers above should return functions ( functions that return functions! )
 	panic(http.ListenAndServe(":"+port, httpgzip.NewHandler(serveMux)))
