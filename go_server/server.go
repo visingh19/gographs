@@ -378,16 +378,24 @@ func main() {
 	defer unsafeClose(driver) // 'defer' is basically 'finally', executes on function return
 
 	serveMux := http.NewServeMux()
+
+	// Serve webpage
+
 	// serveMux.HandleFunc("/", defaultHandler)
 	// htmlData := http.FileServer(http.Dir("my/vue/frontend/files"));
 	// serveMux.handle("/", htmlData);
 	// serveMux.HandleFunc("/api/search", searchHandlerFunc(driver, neo4jConfig.Database))
 	// serveMux.HandleFunc("/adjacentnodes/", movieHandlerFunc(driver, configuration.Database))
+
+	// APIs
+
+	// serveMux.HandleFunc("/api/resetgraph", resetGraphHandlerFunc(driver, configuration.Database)) // empties graph & fills it with a new fake data set
 	serveMux.HandleFunc("/graph", graphHandler(driver, neo4jConfig.Database))
+
+	// Self loggers & testing functions ( logs to console, not site / api )
 
 	fmt.Printf("Running on port %s, database is at %s...", port, neo4jConfig.Url)
 	fmt.Printf("%+v\n", neo4jConfig)
-	// fmt.Printf("Running on port %s, database is at %s\n", port, configuration.Url)
 
 	// basic check from DB
 	// fmt.Printf("Running 'get Actors' function...")
@@ -398,10 +406,12 @@ func main() {
 	// helloWorld(driver, neo4jConfig.Database)
 
 	// fills db with 50 relations
-	fillNeo4jDB(driver, neo4jConfig.Database, 100)
+	// fillNeo4jDB(driver, neo4jConfig.Database, 100)
 
 	// empties db of all nodes & relations
-	emptyNeo4jDB(driver, neo4jConfig.Database)
+	// emptyNeo4jDB(driver, neo4jConfig.Database)
+
+	// listen & serve call ( serves website )
 
 	// the handler below wants functions, so the handlers above should return functions ( functions that return functions! )
 	panic(http.ListenAndServe(":"+port, httpgzip.NewHandler(serveMux)))
