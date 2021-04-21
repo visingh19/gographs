@@ -1,0 +1,19 @@
+/* sass not working right now. that sucks but whatever. 
+bigger fish to fry.*/
+
+.graph-box {
+	
+}
+
+.graph-box__actions {
+	display: flex;
+	flex: row nowrap;
+	justify-content: space-around;
+
+	.btn {
+		width: 100px;
+		height: 40px;
+		font-weight: 500;
+	}
+}
+

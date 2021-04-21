@@ -1,8 +1,13 @@
 <template>
   <div class="graph-box">
-    Graph Box.
-    <div v-on:click="simpleClick">Click me!</div>
-    <div v-on:click="callSearch">Click me for a network call!</div>
+    <div class="graph-box__actions">
+      <div v-on:click="simpleClick" class="btn">Click me!</div>
+      <div v-on:click="callSearch" class="btn">Click me for a network call!</div>
+    </div>
+    
+    <div class="graph-box__d3-container">
+      <div id="graph-box__d3-id"></div>
+    </div>
   </div>
 </template>
 
@@ -42,5 +47,5 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-  @import './GraphBox.scss';
+  @import './GraphBox.css';
 </style>

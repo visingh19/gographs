@@ -1,7 +1,6 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    Don't sweat the small stuff. We have things incoming.
   </div>
 </template>
 
