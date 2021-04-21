@@ -381,10 +381,9 @@ func main() {
 
 	// Serve webpage
 
-	// serveMux.HandleFunc("/", defaultHandler)
-	// htmlData := http.FileServer(http.Dir("my/vue/frontend/files"));
-	// serveMux.handle("/", htmlData);
-	// serveMux.HandleFunc("/api/search", searchHandlerFunc(driver, neo4jConfig.Database))
+	htmlData := http.FileServer(http.Dir("./frontend/dist"));
+	serveMux.Handle("/", htmlData);
+	serveMux.HandleFunc("/api/search", searchHandlerFunc(driver, neo4jConfig.Database))
 	// serveMux.HandleFunc("/adjacentnodes/", movieHandlerFunc(driver, configuration.Database))
 
 	// APIs
