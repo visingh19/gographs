@@ -7,6 +7,8 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 	"encoding/json"
 	// "io/ioutil"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -16,7 +18,7 @@ import (
 	// "net/url"
 	// "os"
 	"strconv"
-	// "strings"
+	"strings"
 
 	"github.com/daaku/go.httpgzip"
 )
@@ -152,7 +154,65 @@ func setNeo4jConfigs() *Neo4jConfiguration {
 	}
 }
 
-// func to add random data into the DB.
+// func to empty out DB ( todo )
+func fillNeo4jDB(driver neo4j.Driver, database string) (string, error) {
+
+	session := driver.NewSession(neo4j.SessionConfig{
+		AccessMode:   neo4j.AccessModeRead,
+		DatabaseName: database,
+	})
+	defer unsafeClose(session)
+
+
+	var fNames = []string{"Alice", "Bob", "Carol", "Danny", "Eve", "Finn", "Gina", "Hank", "Irene", "John" } // 10
+	var lNames = []string{"Andrews", "Brick", "Carter", "Daves", "Erickson"} // 5 -> max unique AWS 'persons' = 50 ( 10 x 5 )
+	var relations = []string{"MANAGES", "REPORTS_TO", "PAYS", "MONITORS", "AUTHORIZES"} // 5 -> 5 random relationships ( and yes, a person can manage themselves haha. )
+
+	// Now we create 200 relationships - somewhat dense --> (person)-(relation)->(person) 200 times.
+	// At worst ( pigeonhole principle ) each of the 50 possible nodes has 4 relations, fairly connected!
+
+	// Because there are few nodes ( 50 or less ) and many relations ( 200 ), deletion should be easy.
+	// Does send 600 lines to the transaction, so that might cause problems?
+
+	var query strings.Builder
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < 200; i++ {
+		fullNameOne := fNames[rand.Intn(len(fNames))] + " " + lNames[rand.Intn(len(lNames))]
+		fullNameTwo := fNames[rand.Intn(len(fNames))] + " " + lNames[rand.Intn(len(lNames))]
+		relation := relations[rand.Intn(len(relations))]
+		iStr := strconv.Itoa(i);
+
+
+		subQuery :=	"MERGE (A"+iStr+":Person {name:'"+fullNameOne+"'})\n" +
+					"MERGE (B"+iStr+":Person {name:'"+fullNameTwo+"'})\n" +
+					"MERGE (A"+iStr+")-[:"+relation+"]->(B"+iStr+")\n"
+
+		query.WriteString(subQuery)
+	}
+
+	// Query String exists.
+
+	_, err := session.WriteTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
+		_, err := transaction.Run(
+			query.String(), map[string]interface{}{})
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	}) // end write.
+
+	if err != nil { // if write had errors, return them.
+		return "", err
+	}
+
+	return "Worked", nil
+
+}
+
+
+// func to add random data into the DB ( todo ) - mocking 'getting aws resource'
+// adds 50 random people and 100 random relationships between them based on a set of relationship names.
 
 
 // func to just print every 'Person' ( to console, not an API! )
@@ -199,7 +259,7 @@ func actorPrinter(driver neo4j.Driver, database string) {
 
 // func to add random message to db... 
 // https://neo4j.com/developer/go/
-func helloWorld(driver neo4j.Driver) (string, error) {
+func helloWorld(driver neo4j.Driver, database string) (string, error) {
 	// already done by main's 'NewDriver' method on neo4jConfig
 	// driver, err := neo4j.NewDriver(uri, neo4j.BasicAuth(username, password, ""))
 	// if err != nil {
@@ -207,7 +267,10 @@ func helloWorld(driver neo4j.Driver) (string, error) {
 	// }
 	// defer driver.Close()
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(neo4j.SessionConfig{
+		AccessMode:   neo4j.AccessModeRead,
+		DatabaseName: database,
+	})
 	defer session.Close()
 
 	greeting, err := session.WriteTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
@@ -294,8 +357,15 @@ func main() {
 	fmt.Printf("%+v\n", neo4jConfig)
 	// fmt.Printf("Running on port %s, database is at %s\n", port, configuration.Url)
 
-	fmt.Printf("Running 'get Actors' function...")
-	actorPrinter(driver, neo4jConfig.Database)
+	// basic check from DB
+	// fmt.Printf("Running 'get Actors' function...")
+	// actorPrinter(driver, neo4jConfig.Database)
+
+	// basic add to DB
+	// fmt.Printf("Running 'hello world' function...")
+	// helloWorld(driver, neo4jConfig.Database)
+
+	fillNeo4jDB(driver, neo4jConfig.Database)
 
 	// the handler below wants functions, so the handlers above should return functions ( functions that return functions! )
 	panic(http.ListenAndServe(":"+port, httpgzip.NewHandler(serveMux)))
