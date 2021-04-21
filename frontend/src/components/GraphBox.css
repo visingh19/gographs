@@ -1,19 +1,71 @@
 /* sass not working right now. that sucks but whatever. 
-bigger fish to fry.*/
+bigger fish to fry.
+
+I guess I'm trying to follow BEM here.*/
+
 
 .graph-box {
-	
+	--accent-color: steelblue;
+	color: var(--accent-color);
 }
 
 .graph-box__actions {
 	display: flex;
 	flex: row nowrap;
-	justify-content: space-around;
-
-	.btn {
-		width: 100px;
-		height: 40px;
-		font-weight: 500;
-	}
+	justify-content: space-between;
+	margin: 0px 10px;
+	max-height: 10vh;
 }
 
+.graph-box__actions div:not(:last-child) {
+	margin-right: 10px;
+}
+
+.graph-box__actions-search {
+	display: flex;
+	flex: row nowrap;
+	justify-content: flex-start;
+	flex: 0 1 80%;
+}
+
+.graph-box__actions-search input {
+	flex: 0 1 100%;
+	margin-right: 10px;
+
+	background-color: black;
+	border-color: var(--accent-color);
+	color: var(--accent-color);
+	font-weight: 500;
+}
+
+.graph-box__actions-search input:focus {
+	outline:2px solid rgba(128, 128, 128, .5);
+	box-shadow: 0px 0px 5px white;
+}
+
+.graph-box__actions .btn {
+	width: 125px;
+	padding: 5px;
+
+	font-weight: 500;
+	border: 1px solid var(--accent-color);
+	border-radius: 5px;
+
+	cursor: pointer;
+}
+
+.graph-box__d3-container {
+	margin: 10px;
+	border: 1px solid var(--accent-color);
+	border-radius: 5px;
+
+	height: 70vh;
+	position: relative;
+}
+
+.graph-box__d3-container .graph-box__no-data {
+	font-size: 50px;
+	position: absolute;
+	width: 100%;
+	top: 25%;
+}

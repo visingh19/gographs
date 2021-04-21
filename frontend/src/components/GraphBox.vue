@@ -1,12 +1,19 @@
 <template>
   <div class="graph-box">
     <div class="graph-box__actions">
+      <div class="graph-box__actions-search">
+        <input type="text" v-model="searchText" />
+        <div v-on:click="callSearch" class="btn">Search</div>
+      </div>
       <div v-on:click="simpleClick" class="btn">Click me!</div>
-      <div v-on:click="callSearch" class="btn">Click me for a network call!</div>
+      <div v-on:click="simpleClick" class="btn">Zoom In!</div>
+      <div v-on:click="simpleClick" class="btn">Zoom Out!</div>
+      <div v-on:click="simpleClick" class="btn">Reset Graph!</div>
     </div>
     
     <div class="graph-box__d3-container">
       <div id="graph-box__d3-id"></div>
+      <div v-if="graphData.length == 0" class="graph-box__no-data">No data right now! Maybe it's loading!</div>
     </div>
   </div>
 </template>
@@ -22,7 +29,8 @@ export default {
   },
   data() {
     return {
-      graphData: []
+      graphData: [],
+      searchText: "Search for a node...",
     }
   },
   methods: {
@@ -37,7 +45,7 @@ export default {
       .catch((error) =>{
         console.log("API error " + error);
       })
-    }
+    },
 
 
 
