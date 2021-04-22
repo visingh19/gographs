@@ -82,7 +82,7 @@ func searchHandlerFunc(driver neo4j.Driver, database string) func(http.ResponseW
 
 // some helpers ripped/edited from https://github.com/neo4j-examples/movies-golang-bolt demo code.
 // now connects.
-func graphHandler(driver neo4j.Driver, database string) func(http.ResponseWriter, *http.Request) {
+func graphHandlerFunc(driver neo4j.Driver, database string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -167,6 +167,27 @@ func graphHandler(driver neo4j.Driver, database string) func(http.ResponseWriter
 	}
 }
 
+
+func resetGraphHandlerFunc(driver neo4j.Driver, database string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+
+		_, err := emptyNeo4jDB(driver, database)
+		if err != nil {
+			log.Println("error emptying graph:", err)
+			return
+		} else {
+			_, err = fillNeo4jDB(driver, database, 50)
+			if err != nil {
+				log.Println("error filling graph:", err)
+				return
+			} else {
+				_, err = fmt.Fprintf(w, "Success")
+			}
+		}
+		
+	}
+}
+
 ///////////////////////////////////////////////////////
 ////////// CONFIGS & HELPERS //////////////////////////
 ///////////////////////////////////////////////////////
@@ -185,6 +206,10 @@ func setNeo4jConfigs() *Neo4jConfiguration {
 
 // func to empty out DB ( todo )
 func emptyNeo4jDB(driver neo4j.Driver, database string) (string, error) {
+	log.Println("Entered emptyNeo4jDB.")
+	defer func() {
+		log.Println("Exited emptyNeo4jDB.")
+	}()
 
 	session := driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeWrite,
@@ -201,6 +226,7 @@ func emptyNeo4jDB(driver neo4j.Driver, database string) (string, error) {
 	_, err := session.WriteTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
 		_, err := transaction.Run(
 			query.String(), map[string]interface{}{})
+		log.Println("Write transaction finshed in emptyNeo4jDB.")
 		if err != nil {
 			return nil, err
 		}
@@ -217,7 +243,13 @@ func emptyNeo4jDB(driver neo4j.Driver, database string) (string, error) {
 
 // func to add random data into the DB - mocking 'getting aws resource'
 // adds up to 50 random people and numRelations random relationships between them based on a set of relationship names.
+// Personal experience: ~numRelations/10 = seconds to completion, so if you choose >300, your network call will timeout ( but the process will still run)
+// Why: Many browsers will automatically timeout a request after 30 seconds.
 func fillNeo4jDB(driver neo4j.Driver, database string, numRelations int) (string, error) {
+	log.Println("Entered fillNeo4jDB.")
+	defer func() {
+		log.Println("Exited fillNeo4jDB.")
+	}()
 
 	session := driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeWrite,
@@ -257,6 +289,7 @@ func fillNeo4jDB(driver neo4j.Driver, database string, numRelations int) (string
 	_, err := session.WriteTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
 		_, err := transaction.Run(
 			query.String(), map[string]interface{}{})
+		log.Println("Write transaction finshed in fillNeo4jDB.")
 		if err != nil {
 			return nil, err
 		}
@@ -415,11 +448,11 @@ func main() {
 
 	// APIs
 
-	// serveMux.HandleFunc("/api/search", searchHandlerFunc(driver, neo4jConfig.Database))
+	serveMux.HandleFunc("/api/search", searchHandlerFunc(driver, neo4jConfig.Database))
 	// serveMux.HandleFunc("/adjacentnodes/", movieHandlerFunc(driver, configuration.Database))
 
-	// serveMux.HandleFunc("/api/resetgraph", resetGraphHandlerFunc(driver, configuration.Database)) // empties graph & fills it with a new fake data set
-	serveMux.HandleFunc("/api/graph", graphHandler(driver, neo4jConfig.Database)) // simply returns a set of nodes and links.
+	serveMux.HandleFunc("/api/resetgraph", resetGraphHandlerFunc(driver, neo4jConfig.Database)) // empties graph & fills it with a new fake data set
+	serveMux.HandleFunc("/api/graph", graphHandlerFunc(driver, neo4jConfig.Database)) // simply returns a set of nodes and links.
 
 	// Self loggers & testing functions ( logs to console, not site / api )
 
@@ -435,7 +468,7 @@ func main() {
 	// helloWorld(driver, neo4jConfig.Database)
 
 	// fills db with n relations
-	fillNeo4jDB(driver, neo4jConfig.Database, 20)
+	// fillNeo4jDB(driver, neo4jConfig.Database, 20)
 
 	// empties db of all nodes & relations
 	// emptyNeo4jDB(driver, neo4jConfig.Database)
