@@ -5,7 +5,6 @@
         <input type="text" v-model="searchText" />
         <div v-on:click="callSearch" class="btn">Search</div>
       </div>
-      <div v-on:click="d3ResetZoom" class="btn">Reset Zoom!</div>
       <div v-on:click="resetD3" class="btn">Reset Visual!</div>
       <div v-on:click="callGraphReset" class="btn">New Graph!</div>
     </div>
@@ -98,10 +97,7 @@ export default {
       d3.select("#graph-box__d3-id").selectAll("svg").remove();
     },
     d3ResetZoom() {
-      console.log("Resetting zoom.");
-      d3.select("#graph-box__d3-svg-id .d3-box-inner")
-        .attr("transform", null);
-      //
+      // non functional. just reset the whole chart with resetD3 instead.
     },
     d3Init() {
       // SET UP D3 GRAPH.
@@ -128,6 +124,7 @@ export default {
 
       var color = d3.scaleOrdinal(d3.schemeCategory10);
 
+      // force simulation code.
       var simulation = d3.forceSimulation()
         .force("link", d3.forceLink())
         .force("charge", d3.forceManyBody())
