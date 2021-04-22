@@ -337,6 +337,7 @@ func parseLimit(req *http.Request) int {
 
 // func to just print every 'Person' ( to console, not an API! )
 // useful for the neo4j demo movies data set, simple test!
+// Although it says 'actor' it works on any 'Person' node with a 'name' property.
 func actorPrinter(driver neo4j.Driver, database string) {
 
 	log.Println("Hi")
@@ -441,20 +442,25 @@ func main() {
 
 	serveMux := http.NewServeMux()
 
+	////////////////////////////////
 	// Serve webpage
+	////////////////////////////////
 
 	htmlData := http.FileServer(http.Dir("./frontend/dist"));
 	serveMux.Handle("/", htmlData);
 
+	////////////////////////////////
 	// APIs
+	////////////////////////////////
 
-	serveMux.HandleFunc("/api/search", searchHandlerFunc(driver, neo4jConfig.Database))
-	// serveMux.HandleFunc("/adjacentnodes/", movieHandlerFunc(driver, configuration.Database))
-
+	// serveMux.HandleFunc("/api/search", searchHandlerFunc(driver, neo4jConfig.Database))
 	serveMux.HandleFunc("/api/resetgraph", resetGraphHandlerFunc(driver, neo4jConfig.Database)) // empties graph & fills it with a new fake data set
 	serveMux.HandleFunc("/api/graph", graphHandlerFunc(driver, neo4jConfig.Database)) // simply returns a set of nodes and links.
 
+	////////////////////////////////
 	// Self loggers & testing functions ( logs to console, not site / api )
+	////////////////////////////////
+
 
 	fmt.Printf("Running on port %s, database is at %s...", port, neo4jConfig.Url)
 	fmt.Printf("%+v\n", neo4jConfig)
