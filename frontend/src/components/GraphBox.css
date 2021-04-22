@@ -69,3 +69,19 @@ I guess I'm trying to follow BEM here.*/
 	width: 100%;
 	top: 25%;
 }
+
+
+.graph-box__d3-container .d3-node-text {
+	fill: var(--accent-color);
+	font-size: 0px;
+	z-index: 10;
+}
+
+.graph-box__d3-container .d3-node-group:hover .d3-node-text {
+	fill: white;
+	stroke: steelblue;
+	stroke-width: 1px;
+	stroke-opacity: .5;
+	transition: font-size .5s ease-in-out;
+	font-size: 18px;
+}

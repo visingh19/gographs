@@ -140,10 +140,10 @@ export default {
           .attr("class", "nodes") // add 'nodes' class to node groups we will create
         .selectAll("g")
         .data(d3Nodes)
-        .enter().append("g")
+        .enter().append("g").attr("class", "d3-node-group")
 
-      node.append("title")
-        .text(function(d) { return d.name; });
+      // node.append("title")
+        // .text(function(d) { return d.name; });
 
       const radius = 5;
       // var circles = // commented out so build stops crying this is an unused var.
@@ -158,8 +158,9 @@ export default {
       // var labels = // commented out so build stops crying this is an unused var.
       node.append("text")
           .text(function(d) {
-            return d.id;
+            return d.name;
           })
+          .attr("class", "d3-node-text")
           .attr('x', 6)
           .attr('y', 3);
 
