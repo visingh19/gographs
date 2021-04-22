@@ -115,7 +115,8 @@ export default {
         .force("link", d3.forceLink())
         .force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .alphaTarget(.05);
+        .alphaTarget(.001)
+        ;
 
 
       // SET UP LINKS
@@ -174,11 +175,15 @@ export default {
       // the current position or the edges of the box
       function ticked() {
         node
+            // control the circles...
             .attr("transform", function(d) {
               const dx = Math.max(radius, Math.min(width - radius, d.x));
               const dy = Math.max(radius, Math.min(height - radius, d.y));
               return "translate(" + dx + "," + dy + ")";
-            });
+            })
+            // control the surrounding groups...
+            .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
+            .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
         link
             .attr("x1", function(d) { return d.source.x; })
             .attr("y1", function(d) { return d.source.y; })
