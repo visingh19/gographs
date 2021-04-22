@@ -41,7 +41,7 @@ type D3Data struct {
 }
 
 type Node struct {
-	Title string `json:"title"`
+	Title string `json:"name"`
 	Label string `json:"label"`
 }
 

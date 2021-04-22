@@ -141,7 +141,7 @@ export default {
         .enter().append("g")
 
       node.append("title")
-        .text(function(d) { return d.id; });
+        .text(function(d) { return d.name; });
 
       const radius = 5;
       // var circles = // commented out so build stops crying this is an unused var.
