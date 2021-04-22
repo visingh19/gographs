@@ -61,6 +61,8 @@ I guess I'm trying to follow BEM here.*/
 
 	height: 70vh;
 	position: relative;
+
+	overflow: hidden;
 }
 
 .graph-box__d3-container .graph-box__no-data {

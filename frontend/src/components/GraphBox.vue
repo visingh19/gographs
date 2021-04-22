@@ -5,9 +5,7 @@
         <input type="text" v-model="searchText" />
         <div v-on:click="callSearch" class="btn">Search</div>
       </div>
-      <div v-on:click="simpleClick" class="btn">Reset Zoom!</div>
-      <div v-on:click="simpleClick" class="btn">Zoom In!</div>
-      <div v-on:click="simpleClick" class="btn">Zoom Out!</div>
+      <div v-on:click="d3ResetZoom" class="btn">Reset Zoom!</div>
       <div v-on:click="resetD3" class="btn">Reset Visual!</div>
       <div v-on:click="callGraphReset" class="btn">New Graph!</div>
     </div>
@@ -74,12 +72,12 @@ export default {
     },
     // this function returns a promise ( returns axios.get... )
     getGraphData() {
-      console.log("Getting graph data.");
+      // console.log("Getting graph data.");
       this.dataLoading = true;
 
       return axios.get("/api/graph")
       .then((response) => {
-        console.log(response)
+        // console.log(response)
         this.graphNodes = response?.data?.nodes ?? []
         this.graphLinks = response?.data?.links ?? []
         this.dataLoading = false;
@@ -99,19 +97,34 @@ export default {
       // Remove d3 graph.
       d3.select("#graph-box__d3-id").selectAll("svg").remove();
     },
+    d3ResetZoom() {
+      console.log("Resetting zoom.");
+      d3.select("#graph-box__d3-svg-id .d3-box-inner")
+        .attr("transform", null);
+      //
+    },
     d3Init() {
       // SET UP D3 GRAPH.
 
       // could get width and height of area, todo...
-      const chartGutter = 50; // sets gutter/2 px 'padding' to box's bounding functions
+      const chartGutter = 50; // sets gutter/2 px 'padding' to box's bounding functions - maybe unneeded with zoom.
       const width = this.$refs.graphBoxRef.clientWidth; 
       const height = this.$refs.graphBoxRef.clientHeight;
       const d3Nodes = this.graphNodes;
       const d3Links = this.graphLinks;
 
       var box = d3.select("#graph-box__d3-id").append("svg")
+        .attr("id", "graph-box__d3-svg-id")
         .attr("width", "100%").attr("height", "100%")
         .attr("pointer-events", "all");
+
+      var boxInner = box.append("g")
+          .attr("class", "d3-box-inner");
+
+      box
+        .call(d3.zoom().on("zoom", function (event) {
+           boxInner.attr("transform", event.transform)
+        }))
 
       var color = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -125,7 +138,7 @@ export default {
 
       // SET UP LINKS
 
-      var link = box.append("g")
+      var link = boxInner.append("g")
           .attr("class", "links") // add links class to lines we will create
         .selectAll("line")
         .data(d3Links)
@@ -136,7 +149,7 @@ export default {
 
       // SET UP NODES
 
-      var node = box.append("g")
+      var node = boxInner.append("g")
           .attr("class", "nodes") // add 'nodes' class to node groups we will create
         .selectAll("g")
         .data(d3Nodes)
