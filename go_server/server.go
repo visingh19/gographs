@@ -80,7 +80,7 @@ func searchHandlerFunc(driver neo4j.Driver, database string) func(http.ResponseW
 }
 
 
-// some helpers ripped from https://github.com/neo4j-examples/movies-golang-bolt demo code.
+// some helpers ripped/edited from https://github.com/neo4j-examples/movies-golang-bolt demo code.
 // now connects.
 func graphHandler(driver neo4j.Driver, database string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -92,38 +92,67 @@ func graphHandler(driver neo4j.Driver, database string) func(http.ResponseWriter
 		})
 		defer unsafeClose(session)
 
+		// set query.
 		limit := parseLimit(req)
-		query := `MATCH (m:Movie)<-[:ACTED_IN]-(a:Person)
-				  RETURN m.title as movie, collect(a.name) as cast
-				  LIMIT $limit `
+		query := `MATCH (a:Person)-[rel]->(b:Person)
+				  RETURN a.name as aName, b.name as bName, type(rel) as relName, id(a) as fromNode, id(b) as toNode
+				  LIMIT $limit`
 
+		// run query as read transaction.
 		d3Resp, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 			records, err := tx.Run(query, map[string]interface{}{"limit": limit})
 			if err != nil {
 				return nil, err
 			}
+			log.Println("read transaction in graphHandler ran")
 			result := D3Data{}
+			idMap := make([]int, 50) // these are 0'd, so we set them to -1, assuming 50 to start. At worst O(n) mem, n = max # of nodes
+			for idx, _ := range idMap {
+				idMap[idx] = -1
+			}
+
 			for records.Next() {
 				record := records.Record()
-				title, _ := record.Get("movie")
-				actors, _ := record.Get("cast")
-				result.Nodes = append(result.Nodes, Node{Title: title.(string), Label: "movie"})
-				movIdx := len(result.Nodes) - 1
-				for _, actor := range actors.([]interface{}) {
-					idx := -1
-					for i, node := range result.Nodes {
-						if actor == node.Title && node.Label == "actor" {
-							idx = i
-							break
-						}
-					}
-					if idx == -1 {
-						result.Nodes = append(result.Nodes, Node{Title: actor.(string), Label: "actor"})
-						result.Links = append(result.Links, Link{Source: len(result.Nodes) - 1, Target: movIdx})
-					} else {
-						result.Links = append(result.Links, Link{Source: idx, Target: movIdx})
-					}
+
+				aName, _ := record.Get("aName") // string
+				bName, _ := record.Get("bName") // string
+				relName, _ := record.Get("relName") // string
+				fromNode64, _ := record.Get("fromNode") // identity as per GraphDB of a, int64
+				toNode64, _ := record.Get("toNode") // identity as per GraphDB of b, int64
+				// convert from int64 to int, we don't need more than 2^32 bits of space. using type assertion.
+				fromNode := int(fromNode64.(int64)) 
+				toNode := int(toNode64.(int64))
+
+
+				// if a 'fromNode' or a 'toNode' is out of the range of the index ( e.g. the 51st node has id 50 )
+				if ( fromNode >= len(idMap) ) {
+					newSlice := make([]int, fromNode - len(idMap) + 1)
+					for idx, _ := range newSlice { newSlice[idx] = -1 }
+					idMap = append(idMap, newSlice...) // spread operator on new slice, create enough space for new nodes
 				}
+
+				if ( toNode >= len(idMap) ) {
+					newSlice := make([]int, toNode - len(idMap) + 1)
+					for idx, _ := range newSlice { newSlice[idx] = -1 }
+					idMap = append(idMap, newSlice...) // spread operator on new slice, create enough space for new nodes
+				}
+
+				// then we can set the mappings to connect links together. 
+				// we are indirectly parsing a set of nodes from a set of link relations.
+				// e.g. Tom of Graph id 5 (0-index'd) results in idMap[5] -> 0'th node in our slice
+				// and then we can always see going forward that Tom is either placed or not placed in our node
+				// and what his id is in the node list!
+				if ( idMap[fromNode] == -1 ) {
+					idMap[fromNode] = len(result.Nodes) 
+					result.Nodes = append(result.Nodes, Node{Title: aName.(string), Label: "Person"})
+				}
+				if ( idMap[toNode] == -1 ) {
+					idMap[toNode] = len(result.Nodes) 
+					result.Nodes = append(result.Nodes, Node{Title: bName.(string), Label: "Person"})
+				}
+
+				// once you've added in any nodes for people that did not exist, we now add the relation/link.
+				result.Links = append(result.Links, Link{Source: idMap[fromNode], Target: idMap[toNode], Relationship: relName.(string)})
 			}
 			return result, nil
 		})
@@ -383,13 +412,14 @@ func main() {
 
 	htmlData := http.FileServer(http.Dir("./frontend/dist"));
 	serveMux.Handle("/", htmlData);
-	serveMux.HandleFunc("/api/search", searchHandlerFunc(driver, neo4jConfig.Database))
-	// serveMux.HandleFunc("/adjacentnodes/", movieHandlerFunc(driver, configuration.Database))
 
 	// APIs
 
+	// serveMux.HandleFunc("/api/search", searchHandlerFunc(driver, neo4jConfig.Database))
+	// serveMux.HandleFunc("/adjacentnodes/", movieHandlerFunc(driver, configuration.Database))
+
 	// serveMux.HandleFunc("/api/resetgraph", resetGraphHandlerFunc(driver, configuration.Database)) // empties graph & fills it with a new fake data set
-	serveMux.HandleFunc("/graph", graphHandler(driver, neo4jConfig.Database))
+	serveMux.HandleFunc("/api/graph", graphHandler(driver, neo4jConfig.Database)) // simply returns a set of nodes and links.
 
 	// Self loggers & testing functions ( logs to console, not site / api )
 
@@ -404,8 +434,8 @@ func main() {
 	// fmt.Printf("Running 'hello world' function...")
 	// helloWorld(driver, neo4jConfig.Database)
 
-	// fills db with 50 relations
-	// fillNeo4jDB(driver, neo4jConfig.Database, 100)
+	// fills db with n relations
+	fillNeo4jDB(driver, neo4jConfig.Database, 20)
 
 	// empties db of all nodes & relations
 	// emptyNeo4jDB(driver, neo4jConfig.Database)

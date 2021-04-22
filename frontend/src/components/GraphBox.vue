@@ -13,7 +13,7 @@
     
     <div class="graph-box__d3-container">
       <div id="graph-box__d3-id"></div>
-      <div v-if="graphData.length == 0" class="graph-box__no-data">No data right now! Maybe it's loading!</div>
+      <div v-if="graphNodes.length == 0" class="graph-box__no-data">No data right now! Maybe it's loading!</div>
     </div>
   </div>
 </template>
@@ -31,7 +31,8 @@ export default {
   },
   data() {
     return {
-      graphData: [],
+      graphNodes: [], //list of dictionaries
+      graphLinks: [], //list of dictionaries
       searchText: "Search for a node...",
     }
   },
