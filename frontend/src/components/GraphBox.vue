@@ -58,6 +58,7 @@ export default {
       this.dataLoading = true;
       this.graphNodes = [];
       this.graphLinks = [];
+      this.d3Delete();
       return axios.get("/api/resetgraph")
       .then((response) => {
         console.log(response)
@@ -102,8 +103,9 @@ export default {
       // SET UP D3 GRAPH.
 
       // could get width and height of area, todo...
-      const width = this.$refs.graphBoxRef.clientWidth
-      const height = this.$refs.graphBoxRef.clientHeight
+      const chartGutter = 50; // sets gutter/2 px 'padding' to box's bounding functions
+      const width = this.$refs.graphBoxRef.clientWidth; 
+      const height = this.$refs.graphBoxRef.clientHeight;
       const d3Nodes = this.graphNodes;
       const d3Links = this.graphLinks;
 
@@ -175,17 +177,18 @@ export default {
       // bounding logic from https://bl.ocks.org/puzzler10/2531c035e8d514f125c4d15433f79d74 
       // simply takes the maximum of 0 + radius ( so circle fits in at [0,0] ) and the lesser of
       // the current position or the edges of the box
+      // ( 0, 0 is top left )
       function ticked() {
         node
             // control the circles...
             .attr("transform", function(d) {
-              const dx = Math.max(radius, Math.min(width - radius, d.x));
-              const dy = Math.max(radius, Math.min(height - radius, d.y));
+              const dx = Math.max(radius + chartGutter/2, Math.min(width - radius - chartGutter/2, d.x));
+              const dy = Math.max(radius + chartGutter/2, Math.min(height - radius - chartGutter/2, d.y));
               return "translate(" + dx + "," + dy + ")";
             })
             // control the surrounding groups...
-            .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
-            .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
+            .attr("cx", function(d) { return d.x = Math.max(radius + chartGutter/2, Math.min(width - radius  - chartGutter/2, d.x)); })
+            .attr("cy", function(d) { return d.y = Math.max(radius  + chartGutter/2, Math.min(height - radius - chartGutter/2, d.y)); });
         link
             .attr("x1", function(d) { return d.source.x; })
             .attr("y1", function(d) { return d.source.y; })
