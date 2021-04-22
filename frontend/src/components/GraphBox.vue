@@ -92,7 +92,7 @@ export default {
     },
     resetD3() {
       this.d3Delete();
-      setTimeout(() => {this.d3Init();}, 500 );
+      this.d3Init();
     },
     d3Delete() {
       // Remove d3 graph.
