@@ -12,7 +12,7 @@
       <div v-on:click="callGraphReset" class="btn">New Graph!</div>
     </div>
     
-    <div class="graph-box__d3-container" id="graph-box__d3-id">
+    <div class="graph-box__d3-container" id="graph-box__d3-id" ref="graphBoxRef">
       <div v-if="graphNodes.length == 0 && !dataLoading" class="graph-box__no-data">No data right now!</div>
       <div v-if="dataLoading" class="graph-box__no-data">Data is loading!</div>
     </div>
@@ -36,6 +36,7 @@ export default {
       graphNodes: [], //list of dictionaries
       graphLinks: [], //list of dictionaries
       searchText: "Search for a node...",
+      zoomScale: 1.0,
     }
   },
   methods: {
@@ -101,7 +102,8 @@ export default {
       // SET UP D3 GRAPH.
 
       // could get width and height of area, todo...
-      const width = 800, height = 400;
+      const width = this.$refs.graphBoxRef.clientWidth
+      const height = this.$refs.graphBoxRef.clientHeight
       const d3Nodes = this.graphNodes;
       const d3Links = this.graphLinks;
 
