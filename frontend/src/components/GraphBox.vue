@@ -151,7 +151,9 @@ export default {
           .attr("class", "links") // add links class to lines we will create
         .selectAll("line")
         .data(d3Links)
-        .enter().append("line")
+        .enter().append("g").attr("class", "d3-link-group"); // link groups.
+
+        var linkLine = link.append("line")
           .attr("stroke-width", function(d) { return Math.sqrt(d.value); })
           .attr("stroke", function(d) { return color(d.relationship); })
           .attr("fill", "none")
@@ -229,7 +231,7 @@ export default {
 
           // reset attrs.
           node.selectAll("circle").attr("class", "");
-          link.attr("class", "");
+          link.selectAll("line").attr("class", "");
           return
         }
         else { this.clickedNodeIdx = sourceNode.index }
@@ -254,9 +256,9 @@ export default {
         ////// Assign Link Classes
 
         // Reset every class on links.
-        link.attr("class", "");
+        link.selectAll("line").attr("class", "");
         // add class to special links
-        connectedLinks.attr("class", "d3-connected-link");
+        connectedLinks.selectAll("line").attr("class", "d3-connected-link");
 
         ////// Assign Node Classes
 
@@ -300,10 +302,18 @@ export default {
               const dy = Math.max(radius + chartGutter/2, Math.min(height - radius - chartGutter/2, d.y));
               return "translate(" + dx + "," + dy + ")";
             })
-            // control the surrounding groups...
+            // control the surrounding groups... ( reversed...? )
             .attr("cx", function(d) { return d.x = Math.max(radius + chartGutter/2, Math.min(width - radius  - chartGutter/2, d.x)); })
             .attr("cy", function(d) { return d.y = Math.max(radius  + chartGutter/2, Math.min(height - radius - chartGutter/2, d.y)); });
-        link
+        link.selectAll("text")
+            .attr("transform", function(d) {
+              const dx = (d.source.x + d.target.x)/2;
+              const dy = (d.source.y + d.target.y)/2;
+              return "translate(" + dx + "," + dy + ")";
+            })
+            // .attr("cx", function(d) { return d.x = (d.source.x + d.target.x)/2; })
+            // .attr("cy", function(d) { return d.y = (d.source.y + d.target.y)/2; });
+        linkLine
             .attr("x1", function(d) { return d.source.x; })
             .attr("y1", function(d) { return d.source.y; })
             .attr("x2", function(d) { return d.target.x; })

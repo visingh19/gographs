@@ -73,8 +73,13 @@ I guess I'm trying to follow BEM here.*/
 }
 
 /* Rules for node & node text. */
-.graph-box__d3-container .d3-node-text {
-	fill: var(--accent-color);
+.graph-box__d3-container .d3-node-text,
+.graph-box__d3-container .d3-link-text {
+	fill: white;
+	stroke: var(--accent-color);
+	stroke-width: 1px;
+	stroke-opacity: .5;
+	transition: font-size .5s ease-in-out;
 	font-size: 0px;
 	z-index: 10;
 }
@@ -90,7 +95,7 @@ I guess I'm trying to follow BEM here.*/
 .graph-box__d3-container .d3-node-group:hover .d3-node-text,
 .graph-box__d3-container .d3-node-group .d3-connected-node + .d3-node-text {
 	fill: white;
-	stroke: steelblue;
+	stroke: var(--accent-color);
 	stroke-width: 1px;
 	stroke-opacity: .5;
 	transition: font-size .5s ease-in-out;
@@ -103,6 +108,11 @@ I guess I'm trying to follow BEM here.*/
 }
 
 /* Rules for link class on selection. */
+
+.graph-box__d3-container .d3-link-group line {
+	stroke-width: 2px;
+}
+
 @keyframes changeLinkColor {
 	from {
 		/*high sat medium lightness blue*/
@@ -114,13 +124,27 @@ I guess I'm trying to follow BEM here.*/
 	}
 }
 
-
-.graph-box__d3-container .d3-connected-link {
+.graph-box__d3-container .d3-link-group line.d3-connected-link {
 	/* stroke: aquamarine; */
-	stroke-width: 3px;
+	stroke-width: 4px;
 
-	animation-duration: 3s;
+	/* cute animation to highlight nodes, but hides relation color*/
+	/*animation-duration: 3s;
 	animation-name: changeLinkColor;
 	animation-iteration-count: infinite;
-	animation-direction: alternate;
+	animation-direction: alternate; */
+}
+
+.graph-box__d3-container .d3-link-group text {
+	transition: font-size .5s ease-in-out;
+	font-size: 0px;
+}
+
+.graph-box__d3-container .d3-link-group:hover text {
+	fill: white;
+	stroke: var(--accent-color);
+	stroke-width: 1px;
+	stroke-opacity: .5;
+	transition: font-size .5s ease-in-out;
+	font-size: 18px;
 }
