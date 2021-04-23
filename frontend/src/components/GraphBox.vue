@@ -104,8 +104,9 @@ export default {
       // console.log(this.d3LinkVar)
       const searchText = this.searchText; // you will lose context of 'this' inside a lambda...?
       const node = this.d3NodeVar 
-      // const link = this.d3LinkVar
+      const link = this.d3LinkVar
 
+      // highlight related nodes
       const relatedNodes = node.filter(function(singleNode) {
         return singleNode.name.toLocaleLowerCase().includes(searchText.toLocaleLowerCase())
       })
@@ -115,7 +116,18 @@ export default {
           .attr("class", "")
       relatedNodes
         .selectAll("circle")
-          .attr("class", "d3-connected-node");
+          .attr("class", "d3-related-node");
+
+      // highlight related links
+      const relatedLinks = link.filter(function(singleLink) {
+        return singleLink.relationship.toLocaleLowerCase().includes(searchText.toLocaleLowerCase())
+      })
+
+      // Reset every class on links.
+      link.selectAll("line").attr("class", "");
+      // add class to special links
+      relatedLinks.selectAll("line").attr("class", "d3-related-link");
+
 
     },
     resetD3() {

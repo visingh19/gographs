@@ -6,6 +6,7 @@ I guess I'm trying to follow BEM here.*/
 
 .graph-box {
 	--accent-color: steelblue;
+	--emphasized-text-size: 18px;
 	color: var(--accent-color);
 }
 
@@ -100,7 +101,7 @@ I guess I'm trying to follow BEM here.*/
 	stroke-width: 1px;
 	stroke-opacity: .5;
 	transition: font-size .5s ease-in-out;
-	font-size: 18px;
+	font-size: var(--emphasized-text-size);
 }
 
 .graph-box__d3-container .d3-node-group .d3-connected-node,
@@ -126,7 +127,8 @@ I guess I'm trying to follow BEM here.*/
 	}
 }
 
-.graph-box__d3-container .d3-link-group line.d3-connected-link {
+.graph-box__d3-container .d3-link-group line.d3-connected-link,
+.graph-box__d3-container .d3-link-group line.d3-related-link {
 	/* stroke: aquamarine; */
 	stroke-width: 4px;
 
@@ -148,5 +150,11 @@ I guess I'm trying to follow BEM here.*/
 	stroke-width: 1px;
 	stroke-opacity: .5;
 	transition: font-size .5s ease-in-out;
-	font-size: 18px;
+	font-size: var(--emphasized-text-size);
+}
+
+/* if it's a related link, make the text bigger */
+.graph-box__d3-container .d3-link-group .d3-related-link + text {
+	transition: font-size .5s ease-in-out;
+	font-size: var(--emphasized-text-size);
 }
