@@ -93,7 +93,8 @@ func graphHandlerFunc(driver neo4j.Driver, database string) func(http.ResponseWr
 		defer unsafeClose(session)
 
 		// set query.
-		limit := parseLimit(req)
+		// limit := parseLimit(req)
+		limit := 100;
 		query := `MATCH (a:Person)-[rel]->(b:Person)
 				  RETURN a.name as aName, b.name as bName, type(rel) as relName, id(a) as fromNode, id(b) as toNode
 				  LIMIT $limit`
@@ -176,7 +177,7 @@ func resetGraphHandlerFunc(driver neo4j.Driver, database string) func(http.Respo
 			log.Println("error emptying graph:", err)
 			return
 		} else {
-			_, err = fillNeo4jDB(driver, database, 50)
+			_, err = fillNeo4jDB(driver, database, 100)
 			if err != nil {
 				log.Println("error filling graph:", err)
 				return

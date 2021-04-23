@@ -107,21 +107,29 @@ export default {
       const link = this.d3LinkVar
 
       // highlight related nodes
-      const relatedNodes = node.filter(function(singleNode) {
+      let relatedNodes = node.filter(function(singleNode) {
         return singleNode.name.toLocaleLowerCase().includes(searchText.toLocaleLowerCase())
+      })      
+
+      // highlight related links
+      let relatedLinks = link.filter(function(singleLink) {
+        return singleLink.relationship.toLocaleLowerCase().includes(searchText.toLocaleLowerCase())
       })
-      // console.log(relatedNodes)
+
+      // if the search is the empty string, the user probably wants to see nothing, not everything
+      if ( searchText.length == 0 ) { 
+        relatedLinks = []
+        relatedNodes = []
+      }
+
+      // reset node class
       node
         .selectAll("circle")
           .attr("class", "")
+      // then add class to special nodes
       relatedNodes
         .selectAll("circle")
           .attr("class", "d3-related-node");
-
-      // highlight related links
-      const relatedLinks = link.filter(function(singleLink) {
-        return singleLink.relationship.toLocaleLowerCase().includes(searchText.toLocaleLowerCase())
-      })
 
       // Reset every class on links.
       link.selectAll("line").attr("class", "");
@@ -169,11 +177,13 @@ export default {
       var nodeColor = d3.scaleSequential().interpolator(d3.interpolateBlues).domain([0,10]);
 
       // force simulation code.
+      // https://github.com/d3/d3-force#forces
       var simulation = d3.forceSimulation()
         .force("link", d3.forceLink())
-        .force("charge", d3.forceManyBody())
+        .force("charge", d3.forceManyBody().strength(-150))
         .force("center", d3.forceCenter(width / 2, height / 2))
-        // .alphaTarget(.001) // consumes a lot of processing power but keeps the animation from halting.
+        .alphaDecay(.01)
+        // .alphaTarget(.001) // consumes a LOT of processing power but keeps the animation from halting.
         ;
 
 
@@ -365,7 +375,7 @@ export default {
       }
 
       function dragended(event, d) {
-        if (event.active) simulation.alphaTarget(0);
+        if (event.active) simulation.alphaTarget(0.3).restart();
         d.fx = null;
         d.fy = null;
       }

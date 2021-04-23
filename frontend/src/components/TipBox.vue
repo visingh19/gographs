@@ -6,6 +6,7 @@
       <p>Scroll with scroll wheel to zoom.</p>
       <p>New Graph to generate a new graph!</p>
       <p>Drag a node to move it around, hover on a line to see what the relationship is!</p>
+      <p>Drag not working? The simulation stopped to save computing resources, restart it with 'Reset Visual'!</p>
       <p>Try: Search for a name, then click that node to see who all that person is connected to.</p>
     </div>
   </div>
