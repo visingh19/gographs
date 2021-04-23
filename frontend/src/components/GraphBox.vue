@@ -7,12 +7,15 @@
       </div>
       <div v-on:click="resetD3" class="btn">Reset Visual!</div>
       <div v-on:click="callGraphReset" class="btn">New Graph!</div>
+      <div v-on:click="showTips = !showTips" class="btn">Tips {{showTips ? "Off" : "On"}}</div>
     </div>
     
     <div class="graph-box__d3-container" id="graph-box__d3-id" ref="graphBoxRef">
       <div v-if="graphNodes.length == 0 && !dataLoading" class="graph-box__no-data">No data right now!</div>
       <div v-if="dataLoading" class="graph-box__no-data">Data is loading!</div>
     </div>
+
+    <TipBox v-bind:show="showTips" />
   </div>
 </template>
 
@@ -21,10 +24,13 @@
 // this really should be just an imported js file for this component...
 import axios from 'axios';
 import * as d3 from 'd3';
-
+import TipBox from './TipBox.vue'
 
 export default {
   name: 'GraphBox',
+  components: {
+    TipBox,
+  },
   props: {
   },
   data() {
@@ -36,6 +42,7 @@ export default {
       // clickedNode: null,
       d3NodeVar: null,
       d3LinkVar: null,
+      showTips: true,
 
     }
   },
