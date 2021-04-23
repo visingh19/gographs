@@ -42,7 +42,7 @@ export default {
       // clickedNode: null,
       d3NodeVar: null,
       d3LinkVar: null,
-      showTips: true,
+      showTips: false,
 
     }
   },
@@ -134,6 +134,7 @@ export default {
         }))
 
       var color = d3.scaleOrdinal(d3.schemeCategory10);
+      var nodeColor = d3.scaleSequential().interpolator(d3.interpolateBlues).domain([0,10]);
 
       // force simulation code.
       var simulation = d3.forceSimulation()
@@ -152,10 +153,19 @@ export default {
         .data(d3Links)
         .enter().append("line")
           .attr("stroke-width", function(d) { return Math.sqrt(d.value); })
-          .attr("stroke", "#CCC")
+          .attr("stroke", function(d) { return color(d.relationship); })
           .attr("fill", "none")
-          .attr("marker-end", "url(#end-triangle)"); // attach arrow to lines.
+          .attr("marker-end", "url(#end-triangle)") // attach arrow to lines.
+        ;
       this.d3LinkVar = link;
+
+      link.append("text")
+          .text(function(d) {
+            return d.relationship;
+          })
+          .attr("class", "d3-link-text")
+          .attr('x', 6)
+          .attr('y', 3);
 
 
       // build the arrow.
@@ -196,7 +206,7 @@ export default {
       // var circles = // commented out so build stops crying this is an unused var.
       node.append("circle")
           .attr("r", 5)
-          .attr("fill", function(d) { return color(d.group); })
+          .attr("fill", function() { return nodeColor(7); })
           .call(d3.drag()
               .on("start", dragstarted)
               .on("drag", dragged)
