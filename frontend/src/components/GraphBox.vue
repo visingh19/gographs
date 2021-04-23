@@ -33,7 +33,10 @@ export default {
       graphNodes: [], //list of dictionaries
       graphLinks: [], //list of dictionaries
       searchText: "Search for a node...",
-      zoomScale: 1.0,
+      // clickedNode: null,
+      d3NodeVar: null,
+      d3LinkVar: null,
+
     }
   },
   methods: {
@@ -99,6 +102,7 @@ export default {
     d3ResetZoom() {
       // non functional. just reset the whole chart with resetD3 instead.
     },
+    // this function kind of does everything...
     d3Init() {
       // SET UP D3 GRAPH.
 
@@ -143,6 +147,7 @@ export default {
           .attr("stroke-width", function(d) { return Math.sqrt(d.value); })
           .attr("stroke", "#CCC")
           .attr("fill", "none");
+      this.d3LinkVar = link;
 
       // SET UP NODES
 
@@ -151,6 +156,7 @@ export default {
         .selectAll("g")
         .data(d3Nodes)
         .enter().append("g").attr("class", "d3-node-group")
+      this.d3NodeVar = node;
 
       // node.append("title")
         // .text(function(d) { return d.name; });
@@ -174,6 +180,53 @@ export default {
           .attr('x', 6)
           .attr('y', 3);
 
+
+      // highlight related nodes & links
+      node.on('click', function(event, sourceNode) {
+        console.log(sourceNode);
+        //////// connected links & node indices
+        var connectedNodeIndices = new Set(); // in an ideal world, we could just do a reduce, but we're already iterating
+        connectedNodeIndices.add(sourceNode.index); // you are 'connected' to yourself.
+        const connectedLinks = link.filter(function(singleLink) {
+          // console.log(singleLink);
+          const connected = sourceNode.index == singleLink.source.index || sourceNode.index == singleLink.target.index;
+          if ( connected ) { 
+            // only one of these will trigger, this is optimal over 'set add' checking the entire set.
+            // note that if source index matches, then you add target ( & vice versa ) - add the side your sourceNode is not.
+            if ( sourceNode.index == singleLink.source.index ) { connectedNodeIndices.add(singleLink.target.index ) }
+            if ( sourceNode.index == singleLink.target.index ) { connectedNodeIndices.add(singleLink.source.index ) }
+            return true;
+          }
+          return false;
+        })
+        // console.log(connectedLinks); // the set of attached links.
+
+        ////// Assign Link Classes
+
+        // Reset every class on links.
+        link.attr("class", "");
+        // add class to special links
+        connectedLinks.attr("class", "d3-connected-link");
+
+        ////// Assign Node Classes
+
+        // get related nodes based on indices.
+        const connectedNodes = node.filter(function(singleNode) {
+          return connectedNodeIndices.has(singleNode.index);
+        });
+
+        // reset every class on circles
+        node
+        .selectAll("circle")
+          .attr("class", "");
+        // add class to connected circles
+        connectedNodes
+        .selectAll("circle")
+          .attr("class", "d3-connected-node");
+
+
+
+      }) // node on click.
 
       // FORCE FXNS
 

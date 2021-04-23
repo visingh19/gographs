@@ -104,7 +104,7 @@ func graphHandlerFunc(driver neo4j.Driver, database string) func(http.ResponseWr
 			if err != nil {
 				return nil, err
 			}
-			log.Println("read transaction in graphHandler ran")
+			// log.Println("read transaction in graphHandler ran")
 			result := D3Data{}
 			idMap := make([]int, 50) // these are 0'd, so we set them to -1, assuming 50 to start. At worst O(n) mem, n = max # of nodes
 			for idx, _ := range idMap {

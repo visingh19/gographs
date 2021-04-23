@@ -72,18 +72,48 @@ I guess I'm trying to follow BEM here.*/
 	top: 25%;
 }
 
-
+/* Rules for node & node text. */
 .graph-box__d3-container .d3-node-text {
 	fill: var(--accent-color);
 	font-size: 0px;
 	z-index: 10;
 }
 
-.graph-box__d3-container .d3-node-group:hover .d3-node-text {
+/* if node group is hovered, or this is a 'connected' node. */
+.graph-box__d3-container .d3-node-group:hover .d3-node-text,
+.graph-box__d3-container .d3-node-group .d3-connected-node + .d3-node-text {
 	fill: white;
 	stroke: steelblue;
 	stroke-width: 1px;
 	stroke-opacity: .5;
 	transition: font-size .5s ease-in-out;
 	font-size: 18px;
+}
+
+.graph-box__d3-container .d3-node-group .d3-connected-node {
+	r: 10;
+	transition: r .5s ease-in-out;
+}
+
+/* Rules for link class on selection. */
+@keyframes changeLinkColor {
+	from {
+		/*high sat medium lightness blue*/
+		stroke: #45bed9;
+	}
+	to {
+		/*aquamarine*/
+		stroke: #7FFFD4;
+	}
+}
+
+
+.graph-box__d3-container .d3-connected-link {
+	/* stroke: aquamarine; */
+	stroke-width: 3px;
+
+	animation-duration: 3s;
+	animation-name: changeLinkColor;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
 }
