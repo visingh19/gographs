@@ -39,7 +39,7 @@ export default {
       graphNodes: [], //list of dictionaries
       graphLinks: [], //list of dictionaries
       searchText: "Search for a node...",
-      // clickedNode: null,
+      clickedNodeIdx: -1,
       d3NodeVar: null,
       d3LinkVar: null,
       showTips: false,
@@ -224,7 +224,16 @@ export default {
 
       // highlight related nodes & links
       node.on('click', function(event, sourceNode) {
-        console.log(sourceNode);
+        if ( sourceNode.index == this.clickedNodeIdx ) {
+          this.clickedNodeIdx = -1;
+
+          // reset attrs.
+          node.selectAll("circle").attr("class", "");
+          link.attr("class", "");
+          return
+        }
+        else { this.clickedNodeIdx = sourceNode.index }
+
         //////// connected links & node indices
         var connectedNodeIndices = new Set(); // in an ideal world, we could just do a reduce, but we're already iterating
         connectedNodeIndices.add(sourceNode.index); // you are 'connected' to yourself.
@@ -258,12 +267,12 @@ export default {
 
         // reset every class on circles
         node
-        .selectAll("circle")
-          .attr("class", "");
+          .selectAll("circle")
+            .attr("class", "");
         // add class to connected circles
         connectedNodes
-        .selectAll("circle")
-          .attr("class", "d3-connected-node");
+          .selectAll("circle")
+            .attr("class", "d3-connected-node");
 
 
 

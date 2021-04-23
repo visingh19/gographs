@@ -79,6 +79,13 @@ I guess I'm trying to follow BEM here.*/
 	z-index: 10;
 }
 
+.graph-box__d3-container .d3-node-group circle {
+	transition: r .5s ease-in-out;
+}
+.graph-box__d3-container .d3-node-group text {
+	transition: font-size .5s ease-in-out;
+}
+
 /* if node group is hovered, or this is a 'connected' node. */
 .graph-box__d3-container .d3-node-group:hover .d3-node-text,
 .graph-box__d3-container .d3-node-group .d3-connected-node + .d3-node-text {
