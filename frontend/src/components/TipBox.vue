@@ -2,9 +2,11 @@
   <div class="tip-box" v-if="show">
     <div class="tip-box__header">Tips</div>
     <div>
-      <p>Click reset visual to reset selected nodes and zoom.</p>
+      <p>Click reset visual to reset everything nodes, zoom, and selections!</p>
       <p>Scroll with scroll wheel to zoom.</p>
       <p>New Graph to generate a new graph!</p>
+      <p>Drag a node to move it around, hover on a line to see what the relationship is!</p>
+      <p>Try: Search for a name, then click that node to see who all that person is connected to.</p>
     </div>
   </div>
 </template>

@@ -2,7 +2,7 @@
   <div class="graph-box">
     <div class="graph-box__actions">
       <div class="graph-box__actions-search">
-        <input type="text" v-model="searchText" />
+        <input type="text" v-model="searchText" v-on:keyup="searchKeyPressHandler"/>
         <div v-on:click="callSearch" class="btn">Search</div>
       </div>
       <div v-on:click="resetD3" class="btn">Reset Visual!</div>
@@ -51,16 +51,15 @@ export default {
       console.log("I was clicked.");
       this.getGraphData()
     },
-    callSearch() {
-      return axios.get("/api/search")
-      .then((response) => {
-        console.log(response)
-      })
-      .catch((error) =>{
-        console.log("API error " + error);
-        throw error
-      })
+    searchKeyPressHandler(e) {
+      if ( e.keyCode == 13) {
+        // if enter pressed
+        this.callSearch()
+      }
     },
+
+
+    // api calls
     callGraphReset() {
       this.dataLoading = true;
       this.graphNodes = [];
@@ -96,6 +95,27 @@ export default {
         this.dataLoading = false;
         throw error
       })
+
+    },
+
+    // d3 manipulation functions
+    callSearch() {
+      // console.log(this.d3NodeVar)
+      // console.log(this.d3LinkVar)
+      const searchText = this.searchText; // you will lose context of 'this' inside a lambda...?
+      const node = this.d3NodeVar 
+      // const link = this.d3LinkVar
+
+      const relatedNodes = node.filter(function(singleNode) {
+        return singleNode.name.toLocaleLowerCase().includes(searchText.toLocaleLowerCase())
+      })
+      // console.log(relatedNodes)
+      node
+        .selectAll("circle")
+          .attr("class", "")
+      relatedNodes
+        .selectAll("circle")
+          .attr("class", "d3-connected-node");
 
     },
     resetD3() {
@@ -141,7 +161,7 @@ export default {
         .force("link", d3.forceLink())
         .force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .alphaTarget(.001)
+        // .alphaTarget(.001) // consumes a lot of processing power but keeps the animation from halting.
         ;
 
 

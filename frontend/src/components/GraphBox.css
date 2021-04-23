@@ -93,7 +93,8 @@ I guess I'm trying to follow BEM here.*/
 
 /* if node group is hovered, or this is a 'connected' node. */
 .graph-box__d3-container .d3-node-group:hover .d3-node-text,
-.graph-box__d3-container .d3-node-group .d3-connected-node + .d3-node-text {
+.graph-box__d3-container .d3-node-group .d3-connected-node + .d3-node-text,
+.graph-box__d3-container .d3-node-group .d3-related-node + .d3-node-text {
 	fill: white;
 	stroke: var(--accent-color);
 	stroke-width: 1px;
@@ -102,7 +103,8 @@ I guess I'm trying to follow BEM here.*/
 	font-size: 18px;
 }
 
-.graph-box__d3-container .d3-node-group .d3-connected-node {
+.graph-box__d3-container .d3-node-group .d3-connected-node,
+.graph-box__d3-container .d3-node-group .d3-related-node {
 	r: 10;
 	transition: r .5s ease-in-out;
 }
