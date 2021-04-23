@@ -146,8 +146,32 @@ export default {
         .enter().append("line")
           .attr("stroke-width", function(d) { return Math.sqrt(d.value); })
           .attr("stroke", "#CCC")
-          .attr("fill", "none");
+          .attr("fill", "none")
+          .attr("marker-end", "url(#end-triangle)"); // attach arrow to lines.
       this.d3LinkVar = link;
+
+
+      // build the arrow.
+      // https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/marker-end
+      // https://bl.ocks.org/d3noob/5141278
+      box.append("svg:defs").selectAll("marker")
+          .data(["end-triangle"])
+        .enter().append("svg:marker") // marker element
+          .attr("id", String)
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 35)
+          .attr("refY", 0)
+          .attr("markerWidth", 6)
+          .attr("markerHeight", 6)
+          .attr("markerUnits", "userSpaceOnUse") // https://stackoverflow.com/questions/48962654/how-to-maintain-the-svg-marker-width-and-height -- prevents arrow from resizing.
+          .attr("orient", "auto")
+        .append("svg:path") // define shape of triangle
+          .attr("d", "M0,-5L10,0L0,5") // no fill.
+          .attr("fill", "currentColor")
+        ;
+
+      
+
 
       // SET UP NODES
 
